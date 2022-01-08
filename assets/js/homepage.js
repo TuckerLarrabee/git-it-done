@@ -6,7 +6,7 @@ var repoSearchTerm = document.querySelector("#repo-search-term")
 
 var formSubmitHandler = function (event) {
     event.preventDefault();
-    
+
     //get value from input element
     var username = nameInputEl.value.trim();
 
@@ -21,8 +21,13 @@ var formSubmitHandler = function (event) {
 userFormEl.addEventListener("submit", formSubmitHandler);
 
 var displayRepos = function (repos, searchTerm) {
-    repoContainerEl.textContent=""
-    repoSearchTerm.textContent=searchTerm
+    //check if api returned any repos
+    if (repos.length === 0) {
+        repoContainerEl.textContent = "No repositories found."
+        return;
+    }
+    repoContainerEl.textContent = ""
+    repoSearchTerm.textContent = searchTerm
 
     //loop over repos
     for (var i = 0; i < repos.length; i++) {
@@ -31,24 +36,24 @@ var displayRepos = function (repos, searchTerm) {
 
         //create a container for each repo
         var repoEl = document.createElement("div");
-        repoEl.classList="list-item flex-row justify-space-between align-center";
+        repoEl.classList = "list-item flex-row justify-space-between align-center";
 
         //create a span element to hold repository name
         var spanEl = document.createElement("span");
-        spanEl.textContent=repoName;
+        spanEl.textContent = repoName;
 
         //append to container
         repoEl.appendChild(spanEl);
 
         //create a status element
         var statusEl = document.createElement("span");
-        statusEl.classList= "flex-row align-center";
+        statusEl.classList = "flex-row align-center";
 
         //check if current repo has issues or not
         if (repos[i].open_issues_count > 0) {
-            statusEl.innerHTML ="<i class='fas fa-times status-icon icon-danger'></i>" + repos[i].open_issues_count + " issue(s)";
+            statusEl.innerHTML = "<i class='fas fa-times status-icon icon-danger'></i>" + repos[i].open_issues_count + " issue(s)";
         } else {
-            statusEl.innerHTML ="<i class='fas fa-check-square status-icon icon-success'></i>";
+            statusEl.innerHTML = "<i class='fas fa-check-square status-icon icon-success'></i>";
         }
         // append to container
         repoEl.appendChild(statusEl)
@@ -58,15 +63,19 @@ var displayRepos = function (repos, searchTerm) {
 };
 
 
-var getUserRepos = function(user) {
+var getUserRepos = function (user) {
     // format the github api url
     var apiUrl = "https://api.github.com/users/" + user + "/repos";
-    
+
     // make a request to the url
-    fetch(apiUrl).then(function(response) {
-        response.json().then(function(data) {
-        displayRepos(data,user)
-        });
+    fetch(apiUrl).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                displayRepos(data, user)
+            });
+        } else {
+            alert("Error: GitHub User Not Found")
+        }
     });
-    };
+};
 
